@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   open_news_enviroment:
 
