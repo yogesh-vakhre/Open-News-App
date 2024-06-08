@@ -1,0 +1,556 @@
+openapi: 3.0.0
+info:
+  title: Open News API
+  description:  Develop a RESTful API using Laravel that allows users to This is a comprehensive API that allows developers to access articles from more than 70,000 news sources, including major newspapers, magazines, and blogs. The API provides access to articles in various languages and categories, andit supports search and filtering.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 'Localhost address'
+tags:
+  - name: Auth
+    description: Operations about Authentication
+
+  - name: NewsAPI
+    description: Everything about your NewsAPI
+
+paths:
+
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register
+      description: This can only be done by the register team member.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: "4|eULVXBa0VRtYc6C3ND5rZe0rvvhO7cUHh83B52jO"
+                      user:
+                        $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthorized Access
+        '405':
+          description: Validation exception
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: 'johndoie@gmail.com'
+                password:
+                  type: string
+                  format: password
+                  example: 'johndoie@123'
+      responses:
+        '200':
+          description: User Logged In Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: "4|eULVXBa0VRtYc6C3ND5rZe0rvvhO7cUHh83B52jO"
+                      user:
+                        $ref: "#/components/schemas/User"
+        '403':
+          description: Invalid login details
+        '404':
+          description: Validation exception
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        '200':
+          description: User Logged Out Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthenticated
+
+      security:
+          - bearerAuth: []
+  /auth/user:
+    get:
+      tags:
+        - Auth
+      summary: Get current user logged in
+      description: ''
+      operationId: getUser
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthenticated
+        '404':
+          description: User not found
+      security:
+          - bearerAuth: []
+
+  /auth/update-preference:
+    patch:
+      tags:
+        - Auth
+      summary: Update an existing User preference
+      description: Update an existing User preference
+      operationId: updatePatchUser
+      requestBody:
+        description: Update an existent User in the store
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source:
+                  type: string
+                category:
+                  type: string
+                author:
+                  type: string
+      responses:
+        '200':
+          description: User Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthenticated
+        '404':
+          description: User not found
+        '405':
+          description: Validation exception
+      security:
+        - bearerAuth: []
+
+  /newsapi/top-headlines:
+    get:
+      tags:
+        - NewsAPI
+      summary: Get All Top headlines right now articles
+      description: Get all Top headlines articles
+      operationId: getAllTopHeadlinesArticles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: sources
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: Attribute to sort by (default empty string)
+      responses:
+        '200':
+          description: All Top Headlines Retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  # data:
+                    # type: array
+                    # items:
+                      # $ref: "#/components/schemas/HealthcareProfessional"
+        '401':
+          description: Unauthenticated
+        "500":
+          description: Error
+      security:
+        - bearerAuth: []
+
+  /newsapi/everything:
+    get:
+      tags:
+        - NewsAPI
+      summary: Get All articles
+      description: Get all articles
+      operationId: getAllArticles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+            default: tesla
+          description: Search keyword (default empty string)
+        - in: query
+          name: sources
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: from
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        - in: query
+          name: to
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        - in: query
+          name: language
+          schema:
+            type: string
+            default: en
+          description: Search keyword (default en)
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+            default: 1
+          description: Page index (default 1)
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 100
+          description: Page size (default 100)
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            default: publishedAt
+          description: Attribute to sort by (default 'publishedAt')
+      responses:
+        '200':
+          description: All Articles Retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  # data:
+                    # type: array
+                    # items:
+                      # $ref: "#/components/schemas/HealthcareProfessional"
+        '401':
+          description: Unauthenticated
+        "500":
+          description: Error
+      security:
+        - bearerAuth: []
+
+  /guardianapi/articles:
+    get:
+      tags:
+        - GuardianAPI
+      summary: Get All Guardian articles
+      description: Get all Guardian articles
+      operationId: getAllGuardianArticles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+            default: tesla
+          description: Search keyword (default empty string)
+        - in: query
+          name: source
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: from
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        - in: query
+          name: to
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        # - in: query
+        #   name: pageIndex
+        #   schema:
+        #     type: integer
+        #     default: 1
+        #   description: Page index (default 1)
+        # - in: query
+        #   name: pageSize
+        #   schema:
+        #     type: integer
+        #     default: 100
+        #   description: Page size (default 100)
+
+      responses:
+        '200':
+          description: All Articles Retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  # data:
+                    # type: array
+                    # items:
+                      # $ref: "#/components/schemas/HealthcareProfessional"
+        '401':
+          description: Unauthenticated
+        "500":
+          description: Error
+      security:
+        - bearerAuth: []
+  /guardianapi/get-categories:
+    get:
+      tags:
+        - GuardianAPI
+      summary: Get All Guardian Categories
+      description: Get all Guardian Categories
+      operationId: getAllGuardianCategories
+
+      responses:
+        '200':
+          description: All Categories Retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  # data:
+                    # type: array
+                    # items:
+                      # $ref: "#/components/schemas/HealthcareProfessional"
+        '401':
+          description: Unauthenticated
+        "500":
+          description: Error
+      security:
+        - bearerAuth: []
+
+  /nytimesapi/articles:
+    get:
+      tags:
+        - NewYorkTimesAPI
+      summary: Get All New York Times articles
+      description: Get all New York Times articles
+      operationId: getAllNewYorkTimesArticles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+            default: tesla
+          description: Search keyword (default empty string)
+        - in: query
+          name: source
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: section
+          schema:
+            type: string
+          description: Search keyword (default empty string)
+        - in: query
+          name: from
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        - in: query
+          name: to
+          schema:
+            type: date
+          description: Search keyword (default empty string)
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+            default: 1
+          description: Page index (default 1)
+        # - in: query
+        #   name: pageSize
+        #   schema:
+        #     type: integer
+        #     default: 100
+        #   description: Page size (default 100)
+
+      responses:
+        '200':
+          description: All Articles Retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+                  # data:
+                    # type: array
+                    # items:
+                      # $ref: "#/components/schemas/HealthcareProfessional"
+        '401':
+          description: Unauthenticated
+        "500":
+          description: Error
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Jon Doe
+        email:
+          type: string
+          format: email
+          example: john@email.com
+        email_verified_at:
+          type: string
+          format: date-time
+        password:
+          type: string
+          format: password
+          example: '12345'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      xml:
+        name: user
+
+  requestBodies:
+    UserArray:
+      description: List of user object
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
