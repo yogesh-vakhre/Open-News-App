@@ -1,119 +1,165 @@
+# Define custom Docker network
 networks:
   open_news_enviroment:
 
 services:
-  
+
+  # Frontend service configuration
   frontend:
+    # Build frontend image from the specified context
     build:
       context: ./app-frontend 
+    # Map port 80 on the host to port 80 on the container
     ports:
       - "80:80"
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
+
+  # Backend service configuration
   backend:
-    # image: 'nginx:stable-alpine'
+    # Use a custom Dockerfile for Nginx instead of the default image
     build:
       context: .
       dockerfile: dockerfiles/nginx.dockerfile
+    # Map port 8080 on the host to port 80 on the container
     ports:
       - 8080:80    
+    # Mount local directories to the container
     volumes:
       - ./app-backend:/var/www/html
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    # Specify service dependencies
     depends_on:
       - php
       - redis
       - mysql
       - mailhog
+    # Name the container
     container_name: open_news_enviroment_server
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
-    # extra_hosts:
-    #  - "host.docker.internal:host-gateway"
+
+  # PHP service configuration
   php:
+    # Use a custom Dockerfile for PHP
     build:
       context: .
       dockerfile: dockerfiles/php.dockerfile
+    # Mount the application backend directory to the container
     volumes:
       - ./app-backend:/var/www/html:delegated
+    # Name the container
     container_name: php_open_news_enviroment
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
+
+  # MySQL service configuration
   mysql:
+    # Use the official MySQL image
     image: mysql:8.0.1
+    # Restart policy for the container
     restart: unless-stopped
+    # Allocate a pseudo-TTY for the container
     tty: true
+    # Name the container
     container_name: mysql_open_news_enviroment
+    # Load environment variables from a file
     env_file:
       - mysql/.env
+    # Map port 3306 on the host to port 3306 on the container
     ports:
       - 3306:3306
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
+    # Mount a local directory for MySQL data storage
     volumes:
       - /opt/mysql_data:/var/lib/mysql
+
+  # phpMyAdmin service configuration
   phpmyadmin:
+    # Use the latest official phpMyAdmin image
     image: phpmyadmin/phpmyadmin:latest
+    # Restart policy for the container
     restart: always
+    # Name the container
     container_name: phpmyadmin_open_news_enviroment
+    # Specify service dependencies
     depends_on:
       - mysql
+    # Map port 8891 on the host to port 80 on the container
     ports:
       - '8891:80'
+    # Set environment variables for phpMyAdmin
     environment:
       - PMA_HOST=mysql
       - PMA_USER=root
       - PMA_PASSWORD=secret
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
+
+  # Redis service configuration
   redis:
+    # Use the official Redis image with Alpine Linux
     image: redis:alpine
+    # Name the container
     container_name: redis_open_news_enviroment
+    # Restart policy for the container
     restart: unless-stopped
+    # Map port 6379 on the host to port 6379 on the container
     ports:
       - 6379:6379
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
+    # Command to run Redis with specific options
     command: redis-server --appendonly yes --replica-read-only no
 
+  # Composer service configuration
   composer:
+    # Use a custom Dockerfile for Composer
     build:
       context: ./dockerfiles
       dockerfile: composer.dockerfile
+    # Mount the application backend directory to the container
     volumes:
       - ./app-backend:/var/www/html
+    # Specify service dependencies
     depends_on:
       - php
-    networks:
-      - open_news_enviroment
-  artisan:
-    build:
-      context: .
-      dockerfile: dockerfiles/php.dockerfile
-    volumes:
-      - ./app-backend:/var/www/html
-    entrypoint: ["php", "/var/www/html/artisan"]
-      #depends_on:
-    #- mysql
-    networks:
-      - open_news_enviroment
-  # scheduler:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfiles/php.dockerfile
-  #   container_name: scheduler_open_news_enviroment
-  #   volumes:
-  #     - ./src:/var/www/html
-  #   working_dir: /var/www/html
-  #   entrypoint: [ "php", "artisan", "schedule:work" ]
-  #   networks:
-  #     - open_news_enviroment
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog_open_news_enviroment
-    ports:
-      - 1025:1025
-      - 8025:8025
+    # Connect the service to the custom network
     networks:
       - open_news_enviroment
 
+  # Artisan service configuration
+  artisan:
+    # Use a custom Dockerfile for Artisan (same as PHP Dockerfile)
+    build:
+      context: .
+      dockerfile: dockerfiles/php.dockerfile
+    # Mount the application backend directory to the container
+    volumes:
+      - ./app-backend:/var/www/html
+    # Set the entrypoint to run Artisan commands
+    entrypoint: ["php", "/var/www/html/artisan"]
+    # Connect the service to the custom network
+    networks:
+      - open_news_enviroment
+
+  # MailHog service configuration
+  mailhog:
+    # Use the latest official MailHog image
+    image: mailhog/mailhog:latest
+    # Name the container
+    container_name: mailhog_open_news_enviroment
+    # Map ports 1025 and 8025 on the host to ports 1025 and 8025 on the container
+    ports:
+      - 1025:1025
+      - 8025:8025
+    # Connect the service to the custom network
+    networks:
+      - open_news_enviroment
