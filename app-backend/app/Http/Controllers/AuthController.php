@@ -74,7 +74,7 @@ class AuthController extends Controller
         if (!Auth::attempt($request->only('email', 'password'))) {
             return $this->onError(403, 'Invalid login details');
         }
-        $user = User::where('email', $request->username)->firstOrFail();
+        $user = User::where('email', $request->email)->firstOrFail();
 
 
         $token = $user->createToken('auth_token')->plainTextToken;
