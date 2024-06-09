@@ -48,6 +48,13 @@ Generate the Laravel application key with the following command:
 docker-compose run --rm artisan key:generate
 ```
 
+### Step 4: Generate Laravel Application migrattion
+
+Generate the Laravel application migrate with the following command:
+```bash
+docker-compose run --rm artisan migrate
+```
+
 ## Accessing the Services
 
 Once the containers are up and running, you can access the different services through the following URLs:
