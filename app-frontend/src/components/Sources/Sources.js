@@ -38,7 +38,7 @@ const Sources = (props) => {
     <>
       <div className="aside-block">
         <h3 className="aside-title">Sources</h3>
-        <ul className="aside-links list-unstyled">
+        <ul className="aside-tags list-unstyled">
           {sourcesData.map((source, index) => (
             <li>
               <Link to="/#" onClick={(e) => sourceOnClick(source.id)}>
