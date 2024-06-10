@@ -48,7 +48,7 @@ Generate the Laravel application key with the following command:
 docker-compose run --rm artisan key:generate
 ```
 
-### Step 4: Generate Laravel Application migrattion
+### Step 4: Generate Laravel Application migration
 
 Generate the Laravel application migrate with the following command:
 ```bash
@@ -59,9 +59,9 @@ docker-compose run --rm artisan migrate
 
 Once the containers are up and running, you can access the different services through the following URLs:
 
-- **Backend (Laravel)**: [http://localhost:8080/](http://localhost:8080/)
-- **Frontend (React)**: [http://localhost:8891/](http://localhost:8891/)
-- **PhpMyAdmin**: [http://localhost:8892/](http://localhost:8892/)
+- **Backend (Laravel)**: [http://localhost:8080](http://localhost:8080)
+- **Frontend (React)**: [http://localhost](http://localhost)
+- **PhpMyAdmin**: [http://localhost:8891](http://localhost:8891)
 
 ## Additional Notes
 
